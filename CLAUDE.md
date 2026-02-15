@@ -4,32 +4,59 @@
 
 **Repository**: `progect`
 **Owner**: eitanhameiri
-**Status**: Early-stage / empty repository — no source code, build system, or tests are present yet.
+**Description**: Investment learning platform for beginner investors in Israel, combining AI with peer-to-peer community learning.
+
+## Development Environment
+
+- **Language/Framework**: React + TypeScript
+- **Build system**: Vite
+- **Package manager**: npm
+- **CSS**: CSS Modules with RTL support
+- **Routing**: React Router DOM
+- **Font**: Heebo (Google Fonts)
+
+## Commands
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production (runs tsc + vite build)
+- `npm run preview` - Preview production build
 
 ## Repository Structure
 
 ```
-progect/
-└── README.md          # Project readme (placeholder content)
+src/
+├── components/
+│   ├── ui/          # Reusable UI components (Button, Card, ProgressBar, Input, ScaleSlider)
+│   └── layout/      # Layout components (Header, PageLayout)
+├── pages/
+│   ├── Landing/     # Home page
+│   ├── Onboarding/  # Questionnaire flow
+│   ├── ProfileResults/ # Profile results after questionnaire
+│   ├── Community/   # Community feed with posts and comments
+│   └── Profile/     # User profile page
+├── config/
+│   ├── questionnaire.ts  # All questionnaire questions configuration
+│   └── profiles.ts       # Profile definitions (conservative, moderate, aggressive)
+├── services/
+│   ├── profiling.ts      # Profiling algorithm
+│   └── mockData.ts       # Mock community data
+├── context/
+│   └── UserContext.tsx    # Global state management
+├── types/
+│   └── index.ts          # TypeScript type definitions
+└── styles/
+    ├── global.css         # Global styles + RTL
+    └── variables.css      # CSS custom properties
 ```
 
-This repository currently contains only a minimal README. There are no source files, configuration files, dependencies, or build scripts.
+## Conventions
 
-## Development Environment
-
-- **Language/Framework**: Not yet established
-- **Build system**: None configured
-- **Package manager**: None configured
-- **Testing framework**: None configured
-- **Linter/Formatter**: None configured
-- **CI/CD**: None configured
+- **Language**: Hebrew (RTL) - all UI text is in Hebrew
+- **Type imports**: Use `import type` for type-only imports (verbatimModuleSyntax is enabled)
+- **Components**: Each component has its own folder with `.tsx` + `.module.css`
+- **State management**: React Context (UserContext)
 
 ## Git Workflow
 
 - **Default branch**: `master`
 - **Remote**: `origin`
-
-## Notes for AI Assistants
-
-- This is a bare repository with no established conventions yet. When adding code, choose appropriate tooling and structure based on the task requirements.
-- Update this CLAUDE.md as the project evolves to document new conventions, build commands, and development workflows.

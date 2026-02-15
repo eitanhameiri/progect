@@ -1,0 +1,17 @@
+.layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+  flex: 1;
+  width: 100%;
+}
+
+.narrow {
+  max-width: 720px;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    padding: var(--space-lg) var(--space-md);
+  }
+}

@@ -1,0 +1,26 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.header {
+  text-align: center;
+  padding-bottom: var(--space-md);
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: var(--space-xs);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}

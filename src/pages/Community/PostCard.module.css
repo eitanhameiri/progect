@@ -1,0 +1,80 @@
+.post {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.avatar {
+  font-size: 2rem;
+}
+
+.authorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.authorName {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.profileTag {
+  font-size: 0.6875rem;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  color: white;
+  font-weight: 600;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+}
+
+.content {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-lg);
+  padding-bottom: var(--space-sm);
+}
+
+.likeButton,
+.commentButton {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  transition: all var(--transition-fast);
+}
+
+.likeButton:hover,
+.commentButton:hover {
+  background: var(--gray-100);
+}
+
+.liked {
+  color: var(--error);
+}

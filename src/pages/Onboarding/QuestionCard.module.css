@@ -1,0 +1,104 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md);
+  animation: slideIn 0.35s ease forwards;
+}
+
+.questionText {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-lg);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.hint {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.optionContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 1rem;
+  padding: var(--space-xs) 0;
+}
+
+.radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-300);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.radioSelected {
+  border-color: var(--primary-blue);
+  background: var(--primary-gradient);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--gray-300);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: white;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.checkboxSelected {
+  border-color: var(--primary-blue);
+  background: var(--primary-gradient);
+}
+
+.scaleContainer {
+  padding: var(--space-xl) var(--space-md);
+}
+
+.openContainer {
+  padding: var(--space-md) 0;
+}
+
+.navigation {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+.skipNote {
+  text-align: center;
+  margin-top: var(--space-md);
+  font-size: 0.8125rem;
+  color: var(--gray-400);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
