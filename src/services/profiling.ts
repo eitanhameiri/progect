@@ -1,9 +1,8 @@
 import type { Answer, ProfileScores, ProfileType, UserProfile } from '../types';
-import { questions } from '../config/questionnaire';
-
-const OPTIONAL_CATEGORIES = ['demographic', 'financial', 'personality', 'motivation'];
+import { getQuestions, getCategories } from './questionnaireService';
 
 function getAnswerScore(answer: Answer): number {
+  const questions = getQuestions();
   const question = questions.find((q) => q.id === answer.questionId);
   if (!question) return 0;
 
@@ -34,6 +33,7 @@ function calculateCategoryScore(
   answers: Record<string, Answer>,
   category: string
 ): number {
+  const questions = getQuestions();
   const categoryQuestions = questions.filter(
     (q) => q.category === category && q.weight > 0
   );
@@ -91,6 +91,10 @@ function determineProfileType(riskTolerance: number): ProfileType {
 export function calculateProfile(
   answers: Record<string, Answer>
 ): UserProfile {
+  const questions = getQuestions();
+  const categories = getCategories();
+  const optionalCategories = categories.filter((c) => !c.required).map((c) => c.id);
+
   const riskTolerance = calculateCategoryScore(answers, 'risk');
   const experience = calculateCategoryScore(answers, 'experience');
   const knowledge = calculateCategoryScore(answers, 'experience'); // shared category
@@ -109,7 +113,7 @@ export function calculateProfile(
 
   for (const [key, answer] of Object.entries(answers)) {
     const question = questions.find((q) => q.id === key);
-    if (question && OPTIONAL_CATEGORIES.includes(question.category)) {
+    if (question && optionalCategories.includes(question.category)) {
       personalInfo[key] = answer;
     } else {
       investmentAnswers[key] = answer;

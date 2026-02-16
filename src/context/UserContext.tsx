@@ -1,10 +1,17 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Answer, UserProfile, Post, Comment } from '../types';
+import type { Answer, AuthUser, UserProfile, Post, Comment } from '../types';
 import { calculateProfile } from '../services/profiling';
 import { mockPosts } from '../services/mockData';
+import * as authService from '../services/auth';
 
 interface UserContextType {
+  // Auth
+  user: AuthUser | null;
+  loginUser: (email: string, password: string) => { success: boolean; error?: string };
+  registerUser: (name: string, email: string, password: string) => { success: boolean; error?: string };
+  logoutUser: () => void;
+  // Data
   answers: Record<string, Answer>;
   profile: UserProfile | null;
   posts: Post[];
@@ -22,32 +29,86 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getCurrentUser());
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>(mockPosts);
 
+  // Load user data from localStorage on init / login
+  useEffect(() => {
+    if (user) {
+      const data = authService.loadUserData(user.id);
+      if (data) {
+        setAnswers(data.answers ?? {});
+        setProfile(data.profile ?? null);
+      }
+    }
+  }, [user]);
+
+  // Persist data whenever answers or profile change (if logged in)
+  const persistData = useCallback(
+    (a: Record<string, Answer>, p: UserProfile | null) => {
+      if (user) {
+        authService.saveUserData(user.id, { answers: a, profile: p });
+      }
+    },
+    [user]
+  );
+
   const setAnswer = (questionId: string, answer: Answer) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    setAnswers((prev) => {
+      const next = { ...prev, [questionId]: answer };
+      persistData(next, profile);
+      return next;
+    });
   };
 
   const clearAnswers = () => {
     setAnswers({});
+    persistData({}, profile);
   };
 
   const completeProfile = () => {
     const userProfile = calculateProfile(answers);
     setProfile(userProfile);
+    persistData(answers, userProfile);
   };
 
   const resetProfile = () => {
     setProfile(null);
     setAnswers({});
+    persistData({}, null);
+  };
+
+  const loginUser = (email: string, password: string) => {
+    const result = authService.login(email, password);
+    if (result.success) {
+      setUser(result.user);
+      return { success: true };
+    }
+    return { success: false, error: result.error };
+  };
+
+  const registerUser = (name: string, email: string, password: string) => {
+    const result = authService.register(name, email, password);
+    if (result.success) {
+      setUser(result.user);
+      return { success: true };
+    }
+    return { success: false, error: result.error };
+  };
+
+  const logoutUser = () => {
+    authService.logout();
+    setUser(null);
+    setAnswers({});
+    setProfile(null);
   };
 
   const addPost = (content: string) => {
     const newPost: Post = {
       id: Date.now().toString(),
-      authorName: 'אני',
+      authorName: user?.name ?? 'אני',
       authorAvatar: '😊',
       authorProfile: profile?.profileType ?? 'moderate',
       content,
@@ -98,7 +159,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const addComment = (postId: string, content: string) => {
     const newComment: Comment = {
       id: Date.now().toString(),
-      authorName: 'אני',
+      authorName: user?.name ?? 'אני',
       authorAvatar: '😊',
       content,
       createdAt: new Date().toISOString(),
@@ -127,6 +188,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   return (
     <UserContext.Provider
       value={{
+        user,
+        loginUser,
+        registerUser,
+        logoutUser,
         answers,
         profile,
         posts,

@@ -1,17 +1,7 @@
 // Question Types
 export type QuestionType = 'single' | 'multiple' | 'scale' | 'open';
 
-export type QuestionCategory =
-  | 'risk'
-  | 'experience'
-  | 'goals'
-  | 'knowledge'
-  | 'behavior'
-  | 'demographic'
-  | 'financial'
-  | 'personality'
-  | 'motivation'
-  | 'open_ai';
+export type QuestionCategory = string;
 
 export interface QuestionOption {
   id: string;
@@ -76,6 +66,13 @@ export interface UserProfile {
   answers: Record<string, Answer>;
   personalInfo: Record<string, Answer>;
   completedAt: string;
+}
+
+// Auth Types
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
 }
 
 // Community Types

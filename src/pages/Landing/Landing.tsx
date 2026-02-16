@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 import Button from '../../components/ui/Button/Button';
 import Card from '../../components/ui/Card/Card';
 import PageLayout from '../../components/layout/PageLayout/PageLayout';
@@ -27,6 +28,18 @@ const features = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { user, profile } = useUser();
+
+  const getCtaText = () => {
+    if (user && profile) return 'המשך לקהילה';
+    if (user) return 'המשך לשאלון';
+    return 'בוא נתחיל - זה בחינם';
+  };
+
+  const getCtaAction = () => {
+    if (user && profile) return () => navigate('/community');
+    return () => navigate('/onboarding');
+  };
 
   return (
     <PageLayout>
@@ -42,10 +55,10 @@ export default function Landing() {
             למידה מותאמת אישית עם קהילה תומכת של מתחילים כמוך.
           </p>
           <div className={styles.ctaGroup}>
-            <Button size="lg" onClick={() => navigate('/onboarding')}>
-              בוא נתחיל - זה בחינם
+            <Button size="lg" onClick={getCtaAction()}>
+              {getCtaText()}
             </Button>
-            <p className={styles.ctaNote}>השאלון לוקח כ-3 דקות</p>
+            {!user && <p className={styles.ctaNote}>השאלון לוקח כ-3 דקות</p>}
           </div>
         </div>
       </div>

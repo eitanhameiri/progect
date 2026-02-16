@@ -6,6 +6,9 @@ interface InputProps {
   placeholder?: string;
   multiline?: boolean;
   rows?: number;
+  type?: 'text' | 'email' | 'password';
+  label?: string;
+  error?: string;
 }
 
 export default function Input({
@@ -14,26 +17,33 @@ export default function Input({
   placeholder,
   multiline = false,
   rows = 4,
+  type = 'text',
+  label,
+  error,
 }: InputProps) {
-  if (multiline) {
-    return (
-      <textarea
-        className={`${styles.input} ${styles.textarea}`}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-      />
-    );
-  }
+  const inputClass = `${styles.input} ${error ? styles.inputError : ''}`;
 
   return (
-    <input
-      type="text"
-      className={styles.input}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-    />
+    <div className={styles.field}>
+      {label && <label className={styles.label}>{label}</label>}
+      {multiline ? (
+        <textarea
+          className={`${inputClass} ${styles.textarea}`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={rows}
+        />
+      ) : (
+        <input
+          type={type}
+          className={inputClass}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+        />
+      )}
+      {error && <p className={styles.error}>{error}</p>}
+    </div>
   );
 }

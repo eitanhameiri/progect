@@ -64,6 +64,39 @@
   background: rgba(79, 70, 229, 0.08);
 }
 
+.authSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-right: var(--space-sm);
+  padding-right: var(--space-sm);
+  border-right: 1px solid var(--gray-200);
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.authButton {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.authButton:hover {
+  opacity: 0.9;
+  text-decoration: none;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: var(--space-sm) var(--space-md);

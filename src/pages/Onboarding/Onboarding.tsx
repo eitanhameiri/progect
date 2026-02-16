@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
-import { categories, getQuestionsByCategory } from '../../config/questionnaire';
+import { getCategories, getQuestionsByCategory } from '../../services/questionnaireService';
 import ProgressBar from '../../components/ui/ProgressBar/ProgressBar';
 import CategoryIntro from './CategoryIntro';
 import QuestionCard from './QuestionCard';
@@ -19,10 +19,12 @@ export default function Onboarding() {
     categoryIndex: 0,
   });
 
+  const categories = useMemo(() => getCategories(), []);
+
   // Build flat list of all questions for progress tracking
   const allQuestions = useMemo(() => {
     return categories.flatMap((cat) => getQuestionsByCategory(cat.id));
-  }, []);
+  }, [categories]);
 
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = allQuestions.length;
