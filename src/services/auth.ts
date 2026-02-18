@@ -14,6 +14,7 @@ interface StoredUser {
 interface UserData {
   answers: Record<string, Answer>;
   profile: UserProfile | null;
+  readArticles?: string[];
 }
 
 // Simple hash for demo/testing - NOT for production

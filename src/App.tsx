@@ -8,6 +8,8 @@ import Community from './pages/Community/Community';
 import Profile from './pages/Profile/Profile';
 import Auth from './pages/Auth/Auth';
 import Admin from './pages/Admin/Admin';
+import Learn from './pages/Learn/Learn';
+import ArticlePage from './pages/Learn/ArticlePage';
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/learn" element={<Learn />} />
+          <Route path="/learn/:id" element={<ArticlePage />} />
         </Routes>
       </UserProvider>
     </BrowserRouter>

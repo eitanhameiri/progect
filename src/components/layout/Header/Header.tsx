@@ -4,6 +4,7 @@ import styles from './Header.module.css';
 
 const navItems = [
   { path: '/', label: 'בית' },
+  { path: '/learn', label: 'למידה' },
   { path: '/community', label: 'קהילה' },
   { path: '/profile', label: 'פרופיל' },
   { path: '/admin', label: 'ניהול' },

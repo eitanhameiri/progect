@@ -1,16 +1,20 @@
 import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
 import { useUser } from '../../context/UserContext';
 import { profileDefinitions } from '../../config/profiles';
 import { questions } from '../../config/questionnaire';
+import { getArticles } from '../../services/articlesService';
 import Button from '../../components/ui/Button/Button';
 import Card from '../../components/ui/Card/Card';
+import ProgressBar from '../../components/ui/ProgressBar/ProgressBar';
 import PageLayout from '../../components/layout/PageLayout/PageLayout';
 import ScoreChart from '../ProfileResults/ScoreChart';
 import styles from './Profile.module.css';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { profile, resetProfile } = useUser();
+  const { profile, resetProfile, readArticles } = useUser();
+  const allArticles = useMemo(() => getArticles(), []);
 
   if (!profile) {
     return (
@@ -86,6 +90,22 @@ export default function Profile() {
                   <span className={styles.answerValue}>{item!.answer}</span>
                 </div>
               ))}
+            </div>
+          </Card>
+        )}
+
+        {allArticles.length > 0 && (
+          <Card>
+            <h3 className={styles.sectionTitle}>התקדמות למידה</h3>
+            <ProgressBar
+              current={readArticles.length}
+              total={allArticles.length}
+              label={`${readArticles.length} מתוך ${allArticles.length} מאמרים`}
+            />
+            <div className={styles.learnAction}>
+              <Button variant="outline" size="sm" onClick={() => navigate('/learn')}>
+                המשך ללמוד
+              </Button>
             </div>
           </Card>
         )}

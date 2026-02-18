@@ -88,6 +88,11 @@
   font-weight: 700;
 }
 
+.learnAction {
+  margin-top: var(--space-md);
+  text-align: center;
+}
+
 .actions {
   text-align: center;
   padding: var(--space-lg) 0;

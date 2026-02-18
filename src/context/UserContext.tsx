@@ -24,6 +24,10 @@ interface UserContextType {
   toggleCommentLike: (postId: string, commentId: string) => void;
   addComment: (postId: string, content: string) => void;
   toggleComments: (postId: string) => void;
+  // Reading progress
+  readArticles: string[];
+  markArticleRead: (articleId: string) => void;
+  isArticleRead: (articleId: string) => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -33,6 +37,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [readArticles, setReadArticles] = useState<string[]>([]);
 
   // Load user data from localStorage on init / login
   useEffect(() => {
@@ -41,18 +46,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (data) {
         setAnswers(data.answers ?? {});
         setProfile(data.profile ?? null);
+        setReadArticles(data.readArticles ?? []);
       }
     }
   }, [user]);
 
   // Persist data whenever answers or profile change (if logged in)
   const persistData = useCallback(
-    (a: Record<string, Answer>, p: UserProfile | null) => {
+    (a: Record<string, Answer>, p: UserProfile | null, ra?: string[]) => {
       if (user) {
-        authService.saveUserData(user.id, { answers: a, profile: p });
+        authService.saveUserData(user.id, {
+          answers: a,
+          profile: p,
+          readArticles: ra ?? readArticles,
+        });
       }
     },
-    [user]
+    [user, readArticles]
   );
 
   const setAnswer = (questionId: string, answer: Answer) => {
@@ -80,6 +90,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
     persistData({}, null);
   };
 
+  const markArticleRead = (articleId: string) => {
+    setReadArticles((prev) => {
+      if (prev.includes(articleId)) return prev;
+      const next = [...prev, articleId];
+      persistData(answers, profile, next);
+      return next;
+    });
+  };
+
+  const isArticleRead = (articleId: string) => readArticles.includes(articleId);
+
   const loginUser = (email: string, password: string) => {
     const result = authService.login(email, password);
     if (result.success) {
@@ -103,6 +124,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setAnswers({});
     setProfile(null);
+    setReadArticles([]);
   };
 
   const addPost = (content: string) => {
@@ -204,6 +226,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         toggleCommentLike,
         addComment,
         toggleComments,
+        readArticles,
+        markArticleRead,
+        isArticleRead,
       }}
     >
       {children}

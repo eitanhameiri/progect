@@ -75,6 +75,28 @@ export interface AuthUser {
   email: string;
 }
 
+// Learning Content Types
+export type ArticleDifficulty = 'beginner' | 'intermediate' | 'advanced';
+
+export interface ArticleCategory {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+}
+
+export interface Article {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  categoryId: string;
+  difficulty: ArticleDifficulty;
+  recommendedProfiles: ProfileType[];
+  readingTimeMinutes: number;
+  source?: string;
+}
+
 // Community Types
 export interface Comment {
   id: string;

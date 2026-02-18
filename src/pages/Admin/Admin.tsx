@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CategoryInfo, Question, QuestionOption } from '../../types';
+import type { CategoryInfo, Question, QuestionOption, Article, ArticleCategory, ArticleDifficulty, ProfileType } from '../../types';
 import {
   getCategories,
   getQuestions,
@@ -7,18 +7,27 @@ import {
   saveQuestions,
   resetToDefaults,
 } from '../../services/questionnaireService';
+import {
+  getArticles,
+  getArticleCategories,
+  saveArticles,
+  saveArticleCategories,
+  resetArticlesToDefaults,
+} from '../../services/articlesService';
 import Button from '../../components/ui/Button/Button';
 import Input from '../../components/ui/Input/Input';
 import Card from '../../components/ui/Card/Card';
 import PageLayout from '../../components/layout/PageLayout/PageLayout';
 import styles from './Admin.module.css';
 
-type Tab = 'categories' | 'questions';
+type Tab = 'categories' | 'questions' | 'articles' | 'articleCategories';
 
 export default function Admin() {
   const [tab, setTab] = useState<Tab>('categories');
   const [categories, setCategoriesState] = useState<CategoryInfo[]>(getCategories);
   const [questions, setQuestionsState] = useState<Question[]>(getQuestions);
+  const [articles, setArticlesState] = useState<Article[]>(getArticles);
+  const [artCategories, setArtCategoriesState] = useState<ArticleCategory[]>(getArticleCategories);
 
   const persistCategories = (cats: CategoryInfo[]) => {
     setCategoriesState(cats);
@@ -30,18 +39,31 @@ export default function Admin() {
     saveQuestions(qs);
   };
 
+  const persistArticles = (arts: Article[]) => {
+    setArticlesState(arts);
+    saveArticles(arts);
+  };
+
+  const persistArtCategories = (cats: ArticleCategory[]) => {
+    setArtCategoriesState(cats);
+    saveArticleCategories(cats);
+  };
+
   const handleReset = () => {
     if (confirm('האם אתה בטוח שברצונך לאפס לברירת מחדל? כל השינויים יימחקו.')) {
       resetToDefaults();
+      resetArticlesToDefaults();
       setCategoriesState(getCategories());
       setQuestionsState(getQuestions());
+      setArticlesState(getArticles());
+      setArtCategoriesState(getArticleCategories());
     }
   };
 
   return (
     <PageLayout>
       <div className={styles.header}>
-        <h1 className={styles.title}>ניהול שאלון</h1>
+        <h1 className={styles.title}>ניהול</h1>
         <Button variant="outline" size="sm" onClick={handleReset}>
           איפוס לברירת מחדל
         </Button>
@@ -52,13 +74,25 @@ export default function Admin() {
           className={`${styles.tab} ${tab === 'categories' ? styles.tabActive : ''}`}
           onClick={() => setTab('categories')}
         >
-          ניהול קבוצות ({categories.length})
+          קבוצות שאלון ({categories.length})
         </button>
         <button
           className={`${styles.tab} ${tab === 'questions' ? styles.tabActive : ''}`}
           onClick={() => setTab('questions')}
         >
-          ניהול שאלות ({questions.length})
+          שאלות ({questions.length})
+        </button>
+        <button
+          className={`${styles.tab} ${tab === 'articleCategories' ? styles.tabActive : ''}`}
+          onClick={() => setTab('articleCategories')}
+        >
+          קטגוריות מאמרים ({artCategories.length})
+        </button>
+        <button
+          className={`${styles.tab} ${tab === 'articles' ? styles.tabActive : ''}`}
+          onClick={() => setTab('articles')}
+        >
+          מאמרים ({articles.length})
         </button>
       </div>
 
@@ -77,6 +111,23 @@ export default function Admin() {
           categories={categories}
           questions={questions}
           onChange={persistQuestions}
+        />
+      )}
+      {tab === 'articleCategories' && (
+        <ArticleCategoriesTab
+          categories={artCategories}
+          articles={articles}
+          onChange={persistArtCategories}
+          onDeleteCategory={(catId) => {
+            persistArticles(articles.filter((a) => a.categoryId !== catId));
+          }}
+        />
+      )}
+      {tab === 'articles' && (
+        <ArticlesTab
+          categories={artCategories}
+          articles={articles}
+          onChange={persistArticles}
         />
       )}
     </PageLayout>
@@ -497,6 +548,359 @@ function QuestionEditor({
       {showPlaceholder && (
         <Input label="Placeholder" value={placeholder} onChange={setPlaceholder} placeholder="טקסט רמז..." />
       )}
+
+      {error && <p className={styles.error}>{error}</p>}
+      <div className={styles.editorActions}>
+        <Button size="sm" onClick={handleSave}>{isEdit ? 'שמור' : 'הוסף'}</Button>
+        <Button size="sm" variant="ghost" onClick={onCancel}>ביטול</Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Article Categories Tab ───
+
+function ArticleCategoriesTab({
+  categories,
+  articles,
+  onChange,
+  onDeleteCategory,
+}: {
+  categories: ArticleCategory[];
+  articles: Article[];
+  onChange: (cats: ArticleCategory[]) => void;
+  onDeleteCategory: (catId: string) => void;
+}) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const deleteCategory = (catId: string) => {
+    const count = articles.filter((a) => a.categoryId === catId).length;
+    const msg = count > 0
+      ? `קטגוריה זו מכילה ${count} מאמרים. מחיקתה תמחק גם אותם. להמשיך?`
+      : 'האם למחוק את הקטגוריה?';
+    if (confirm(msg)) {
+      onChange(categories.filter((c) => c.id !== catId));
+      onDeleteCategory(catId);
+    }
+  };
+
+  const updateCategory = (updated: ArticleCategory) => {
+    onChange(categories.map((c) => (c.id === updated.id ? updated : c)));
+    setEditingId(null);
+  };
+
+  const addCategory = (newCat: ArticleCategory) => {
+    onChange([...categories, newCat]);
+    setIsAdding(false);
+  };
+
+  return (
+    <div className={styles.section}>
+      {categories.map((cat) => (
+        <Card key={cat.id}>
+          {editingId === cat.id ? (
+            <ArticleCategoryEditor
+              category={cat}
+              existingIds={categories.map((c) => c.id)}
+              onSave={updateCategory}
+              onCancel={() => setEditingId(null)}
+            />
+          ) : (
+            <div className={styles.itemRow}>
+              <div className={styles.itemInfo}>
+                <span className={styles.itemIcon}>{cat.icon}</span>
+                <div>
+                  <span className={styles.itemTitle}>{cat.title}</span>
+                  <span className={styles.itemMeta}>
+                    {cat.id} | {articles.filter((a) => a.categoryId === cat.id).length} מאמרים
+                  </span>
+                </div>
+              </div>
+              <div className={styles.itemActions}>
+                <button className={styles.iconBtn} onClick={() => setEditingId(cat.id)} title="ערוך">✏️</button>
+                <button className={styles.iconBtn} onClick={() => deleteCategory(cat.id)} title="מחק">🗑️</button>
+              </div>
+            </div>
+          )}
+        </Card>
+      ))}
+
+      {isAdding ? (
+        <Card>
+          <ArticleCategoryEditor
+            existingIds={categories.map((c) => c.id)}
+            onSave={addCategory}
+            onCancel={() => setIsAdding(false)}
+          />
+        </Card>
+      ) : (
+        <Button variant="outline" fullWidth onClick={() => setIsAdding(true)}>
+          + הוסף קטגוריה
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function ArticleCategoryEditor({
+  category,
+  existingIds,
+  onSave,
+  onCancel,
+}: {
+  category?: ArticleCategory;
+  existingIds: string[];
+  onSave: (cat: ArticleCategory) => void;
+  onCancel: () => void;
+}) {
+  const [id, setId] = useState(category?.id ?? '');
+  const [title, setTitle] = useState(category?.title ?? '');
+  const [description, setDescription] = useState(category?.description ?? '');
+  const [icon, setIcon] = useState(category?.icon ?? '📝');
+  const [error, setError] = useState('');
+  const isEdit = !!category;
+
+  const handleSave = () => {
+    if (!id.trim() || !title.trim()) {
+      setError('נא למלא מזהה ושם');
+      return;
+    }
+    if (!isEdit && existingIds.includes(id.trim())) {
+      setError('מזהה כבר קיים');
+      return;
+    }
+    onSave({ id: id.trim(), title: title.trim(), description: description.trim(), icon });
+  };
+
+  return (
+    <div className={styles.editor}>
+      <div className={styles.editorGrid}>
+        <Input label="מזהה (ID)" value={id} onChange={setId} placeholder="my_category" />
+        <Input label="שם" value={title} onChange={setTitle} placeholder="שם הקטגוריה" />
+        <Input label="תיאור" value={description} onChange={setDescription} placeholder="תיאור קצר" />
+        <Input label="אייקון" value={icon} onChange={setIcon} placeholder="📝" />
+      </div>
+      {error && <p className={styles.error}>{error}</p>}
+      <div className={styles.editorActions}>
+        <Button size="sm" onClick={handleSave}>{isEdit ? 'שמור' : 'הוסף'}</Button>
+        <Button size="sm" variant="ghost" onClick={onCancel}>ביטול</Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Articles Tab ───
+
+function ArticlesTab({
+  categories,
+  articles,
+  onChange,
+}: {
+  categories: ArticleCategory[];
+  articles: Article[];
+  onChange: (arts: Article[]) => void;
+}) {
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const filtered = filterCategory === 'all'
+    ? articles
+    : articles.filter((a) => a.categoryId === filterCategory);
+
+  const difficultyLabels: Record<string, string> = {
+    beginner: 'מתחיל',
+    intermediate: 'בינוני',
+    advanced: 'מתקדם',
+  };
+
+  const deleteArticle = (aId: string) => {
+    if (confirm('האם למחוק את המאמר?')) {
+      onChange(articles.filter((a) => a.id !== aId));
+    }
+  };
+
+  const updateArticle = (updated: Article) => {
+    onChange(articles.map((a) => (a.id === updated.id ? updated : a)));
+    setEditingId(null);
+  };
+
+  const addArticle = (newA: Article) => {
+    onChange([...articles, newA]);
+    setIsAdding(false);
+  };
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.filterBar}>
+        <select
+          className={styles.select}
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+        >
+          <option value="all">כל הקטגוריות</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.icon} {cat.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {filtered.map((article) => (
+        <Card key={article.id}>
+          {editingId === article.id ? (
+            <ArticleEditor
+              article={article}
+              categories={categories}
+              existingIds={articles.map((a) => a.id)}
+              onSave={updateArticle}
+              onCancel={() => setEditingId(null)}
+            />
+          ) : (
+            <div className={styles.itemRow}>
+              <div className={styles.itemInfo}>
+                <div>
+                  <span className={styles.itemTitle}>{article.title}</span>
+                  <span className={styles.itemMeta}>
+                    {article.id} | {difficultyLabels[article.difficulty]} |
+                    {categories.find((c) => c.id === article.categoryId)?.title ?? article.categoryId} |
+                    {article.readingTimeMinutes} דקות
+                  </span>
+                </div>
+              </div>
+              <div className={styles.itemActions}>
+                <button className={styles.iconBtn} onClick={() => setEditingId(article.id)} title="ערוך">✏️</button>
+                <button className={styles.iconBtn} onClick={() => deleteArticle(article.id)} title="מחק">🗑️</button>
+              </div>
+            </div>
+          )}
+        </Card>
+      ))}
+
+      {isAdding ? (
+        <Card>
+          <ArticleEditor
+            categories={categories}
+            existingIds={articles.map((a) => a.id)}
+            onSave={addArticle}
+            onCancel={() => setIsAdding(false)}
+          />
+        </Card>
+      ) : (
+        <Button variant="outline" fullWidth onClick={() => setIsAdding(true)}>
+          + הוסף מאמר
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function ArticleEditor({
+  article,
+  categories,
+  existingIds,
+  onSave,
+  onCancel,
+}: {
+  article?: Article;
+  categories: ArticleCategory[];
+  existingIds: string[];
+  onSave: (a: Article) => void;
+  onCancel: () => void;
+}) {
+  const [id, setId] = useState(article?.id ?? '');
+  const [title, setTitle] = useState(article?.title ?? '');
+  const [summary, setSummary] = useState(article?.summary ?? '');
+  const [content, setContent] = useState(article?.content ?? '');
+  const [categoryId, setCategoryId] = useState(article?.categoryId ?? (categories[0]?.id ?? ''));
+  const [difficulty, setDifficulty] = useState<ArticleDifficulty>(article?.difficulty ?? 'beginner');
+  const [readingTime, setReadingTime] = useState(article?.readingTimeMinutes?.toString() ?? '5');
+  const [source, setSource] = useState(article?.source ?? '');
+  const [profiles, setProfiles] = useState<ProfileType[]>(article?.recommendedProfiles ?? ['conservative', 'moderate', 'aggressive']);
+  const [error, setError] = useState('');
+  const isEdit = !!article;
+
+  const toggleProfile = (p: ProfileType) => {
+    setProfiles((prev) =>
+      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+    );
+  };
+
+  const handleSave = () => {
+    if (!id.trim() || !title.trim() || !content.trim()) {
+      setError('נא למלא מזהה, כותרת ותוכן');
+      return;
+    }
+    if (!isEdit && existingIds.includes(id.trim())) {
+      setError('מזהה מאמר כבר קיים');
+      return;
+    }
+
+    onSave({
+      id: id.trim(),
+      title: title.trim(),
+      summary: summary.trim(),
+      content: content.trim(),
+      categoryId,
+      difficulty,
+      recommendedProfiles: profiles,
+      readingTimeMinutes: Number(readingTime) || 5,
+      source: source.trim() || undefined,
+    });
+  };
+
+  const profileLabels: Record<ProfileType, string> = {
+    conservative: 'שמרני',
+    moderate: 'מתון',
+    aggressive: 'אגרסיבי',
+  };
+
+  return (
+    <div className={styles.editor}>
+      <div className={styles.editorGrid}>
+        <Input label="מזהה (ID)" value={id} onChange={setId} placeholder="article_id" />
+        <Input label="כותרת" value={title} onChange={setTitle} placeholder="כותרת המאמר" />
+      </div>
+
+      <Input label="תקציר" value={summary} onChange={setSummary} placeholder="תקציר קצר..." />
+
+      <Input label="תוכן (Markdown)" value={content} onChange={setContent} placeholder="תוכן המאמר..." multiline rows={10} />
+
+      <div className={styles.editorRow}>
+        <div className={styles.selectField}>
+          <label className={styles.selectLabel}>קטגוריה</label>
+          <select className={styles.select} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.icon} {cat.title}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.selectField}>
+          <label className={styles.selectLabel}>רמת קושי</label>
+          <select className={styles.select} value={difficulty} onChange={(e) => setDifficulty(e.target.value as ArticleDifficulty)}>
+            <option value="beginner">מתחיל</option>
+            <option value="intermediate">בינוני</option>
+            <option value="advanced">מתקדם</option>
+          </select>
+        </div>
+        <Input label="זמן קריאה (דקות)" value={readingTime} onChange={setReadingTime} placeholder="5" />
+      </div>
+
+      <Input label="מקור (אופציונלי)" value={source} onChange={setSource} placeholder="למשל: אתר הבורסה" />
+
+      <div>
+        <label className={styles.selectLabel}>פרופילים מומלצים</label>
+        <div className={styles.editorActions}>
+          {(['conservative', 'moderate', 'aggressive'] as ProfileType[]).map((p) => (
+            <label key={p} className={styles.checkboxLabel}>
+              <input type="checkbox" checked={profiles.includes(p)} onChange={() => toggleProfile(p)} />
+              {profileLabels[p]}
+            </label>
+          ))}
+        </div>
+      </div>
 
       {error && <p className={styles.error}>{error}</p>}
       <div className={styles.editorActions}>
