@@ -35,34 +35,56 @@
   color: var(--text-primary);
 }
 
-.answers {
+.holdings {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
-.answerItem {
+.holdingItem {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-bottom: var(--space-md);
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
   border-bottom: 1px solid var(--gray-100);
 }
 
-.answerItem:last-child {
+.holdingItem:last-of-type {
   border-bottom: none;
-  padding-bottom: 0;
 }
 
-.answerQuestion {
+.holdingPlatform {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.holdingDetails {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.holdingAmount {
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.holdingType {
   font-size: 0.8125rem;
   color: var(--text-secondary);
+  background: var(--gray-100);
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
 }
 
-.answerValue {
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--text-primary);
+.holdingTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-md);
+  margin-top: var(--space-sm);
+  border-top: 2px solid var(--gray-200);
+  font-weight: 700;
 }
 
 .recommendations {

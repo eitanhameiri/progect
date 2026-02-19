@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { UserProvider } from './context/UserContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { UserProvider, useUser } from './context/UserContext';
 import Header from './components/layout/Header/Header';
 import Landing from './pages/Landing/Landing';
 import Onboarding from './pages/Onboarding/Onboarding';
@@ -11,13 +11,19 @@ import Admin from './pages/Admin/Admin';
 import Learn from './pages/Learn/Learn';
 import ArticlePage from './pages/Learn/ArticlePage';
 
+function HomeRoute() {
+  const { user } = useUser();
+  if (user) return <Navigate to="/community" replace />;
+  return <Landing />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <UserProvider>
         <Header />
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<HomeRoute />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/results" element={<ProfileResults />} />
           <Route path="/community" element={<Community />} />

@@ -20,10 +20,45 @@ import Card from '../../components/ui/Card/Card';
 import PageLayout from '../../components/layout/PageLayout/PageLayout';
 import styles from './Admin.module.css';
 
-type Tab = 'categories' | 'questions' | 'articles' | 'articleCategories';
+type MainSection = 'questionnaire' | 'groups' | 'users';
+type SubTab = 'categories' | 'questions' | 'articleCategories' | 'articles' | 'groups' | 'users';
+
+interface SectionConfig {
+  id: MainSection;
+  label: string;
+  icon: string;
+  subTabs: { id: SubTab; label: string }[];
+}
+
+const sections: SectionConfig[] = [
+  {
+    id: 'questionnaire',
+    label: 'שאלון',
+    icon: '📝',
+    subTabs: [
+      { id: 'categories', label: 'קבוצות שאלון' },
+      { id: 'questions', label: 'שאלות' },
+      { id: 'articleCategories', label: 'קטגוריות מאמרים' },
+      { id: 'articles', label: 'מאמרים' },
+    ],
+  },
+  {
+    id: 'groups',
+    label: 'קבוצות',
+    icon: '👥',
+    subTabs: [{ id: 'groups', label: 'ניהול קבוצות' }],
+  },
+  {
+    id: 'users',
+    label: 'משתמשים',
+    icon: '👤',
+    subTabs: [{ id: 'users', label: 'ניהול משתמשים' }],
+  },
+];
 
 export default function Admin() {
-  const [tab, setTab] = useState<Tab>('categories');
+  const [activeSection, setActiveSection] = useState<MainSection>('questionnaire');
+  const [activeSubTab, setActiveSubTab] = useState<SubTab>('categories');
   const [categories, setCategoriesState] = useState<CategoryInfo[]>(getCategories);
   const [questions, setQuestionsState] = useState<Question[]>(getQuestions);
   const [articles, setArticlesState] = useState<Article[]>(getArticles);
@@ -60,6 +95,11 @@ export default function Admin() {
     }
   };
 
+  const handleSectionClick = (section: SectionConfig) => {
+    setActiveSection(section.id);
+    setActiveSubTab(section.subTabs[0].id);
+  };
+
   return (
     <PageLayout>
       <div className={styles.header}>
@@ -69,67 +109,85 @@ export default function Admin() {
         </Button>
       </div>
 
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${tab === 'categories' ? styles.tabActive : ''}`}
-          onClick={() => setTab('categories')}
-        >
-          קבוצות שאלון ({categories.length})
-        </button>
-        <button
-          className={`${styles.tab} ${tab === 'questions' ? styles.tabActive : ''}`}
-          onClick={() => setTab('questions')}
-        >
-          שאלות ({questions.length})
-        </button>
-        <button
-          className={`${styles.tab} ${tab === 'articleCategories' ? styles.tabActive : ''}`}
-          onClick={() => setTab('articleCategories')}
-        >
-          קטגוריות מאמרים ({artCategories.length})
-        </button>
-        <button
-          className={`${styles.tab} ${tab === 'articles' ? styles.tabActive : ''}`}
-          onClick={() => setTab('articles')}
-        >
-          מאמרים ({articles.length})
-        </button>
-      </div>
+      <div className={styles.adminLayout}>
+        <aside className={styles.sidebar}>
+          {sections.map((section) => (
+            <div key={section.id} className={styles.sideSection}>
+              <button
+                className={`${styles.sideTab} ${activeSection === section.id ? styles.sideTabActive : ''}`}
+                onClick={() => handleSectionClick(section)}
+              >
+                <span className={styles.sideTabIcon}>{section.icon}</span>
+                {section.label}
+              </button>
+              {activeSection === section.id && section.subTabs.length > 1 && (
+                <div className={styles.subTabs}>
+                  {section.subTabs.map((sub) => (
+                    <button
+                      key={sub.id}
+                      className={`${styles.subTab} ${activeSubTab === sub.id ? styles.subTabActive : ''}`}
+                      onClick={() => setActiveSubTab(sub.id)}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </aside>
 
-      {tab === 'categories' && (
-        <CategoriesTab
-          categories={categories}
-          questions={questions}
-          onChange={persistCategories}
-          onDeleteCategory={(catId) => {
-            persistQuestions(questions.filter((q) => q.category !== catId));
-          }}
-        />
-      )}
-      {tab === 'questions' && (
-        <QuestionsTab
-          categories={categories}
-          questions={questions}
-          onChange={persistQuestions}
-        />
-      )}
-      {tab === 'articleCategories' && (
-        <ArticleCategoriesTab
-          categories={artCategories}
-          articles={articles}
-          onChange={persistArtCategories}
-          onDeleteCategory={(catId) => {
-            persistArticles(articles.filter((a) => a.categoryId !== catId));
-          }}
-        />
-      )}
-      {tab === 'articles' && (
-        <ArticlesTab
-          categories={artCategories}
-          articles={articles}
-          onChange={persistArticles}
-        />
-      )}
+        <div className={styles.content}>
+          {activeSubTab === 'categories' && (
+            <CategoriesTab
+              categories={categories}
+              questions={questions}
+              onChange={persistCategories}
+              onDeleteCategory={(catId) => {
+                persistQuestions(questions.filter((q) => q.category !== catId));
+              }}
+            />
+          )}
+          {activeSubTab === 'questions' && (
+            <QuestionsTab
+              categories={categories}
+              questions={questions}
+              onChange={persistQuestions}
+            />
+          )}
+          {activeSubTab === 'articleCategories' && (
+            <ArticleCategoriesTab
+              categories={artCategories}
+              articles={articles}
+              onChange={persistArtCategories}
+              onDeleteCategory={(catId) => {
+                persistArticles(articles.filter((a) => a.categoryId !== catId));
+              }}
+            />
+          )}
+          {activeSubTab === 'articles' && (
+            <ArticlesTab
+              categories={artCategories}
+              articles={articles}
+              onChange={persistArticles}
+            />
+          )}
+          {activeSubTab === 'groups' && (
+            <div className={styles.placeholder}>
+              <span className={styles.placeholderIcon}>👥</span>
+              <h3>ניהול קבוצות</h3>
+              <p>ניהול קבוצות קהילה יהיה זמין בקרוב</p>
+            </div>
+          )}
+          {activeSubTab === 'users' && (
+            <div className={styles.placeholder}>
+              <span className={styles.placeholderIcon}>👤</span>
+              <h3>ניהול משתמשים</h3>
+              <p>ניהול משתמשים יהיה זמין בקרוב</p>
+            </div>
+          )}
+        </div>
+      </div>
     </PageLayout>
   );
 }

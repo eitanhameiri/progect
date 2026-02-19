@@ -21,7 +21,7 @@ export default function Auth() {
 
   // Redirect if already logged in
   if (user) {
-    navigate('/');
+    navigate('/community');
     return null;
   }
 
@@ -60,14 +60,14 @@ export default function Auth() {
     if (mode === 'login') {
       const result = loginUser(email, password);
       if (result.success) {
-        navigate('/');
+        navigate('/community');
       } else {
         setError(result.error ?? 'שגיאה בהתחברות');
       }
     } else {
       const result = registerUser(name, email, password);
       if (result.success) {
-        navigate('/');
+        navigate('/community');
       } else {
         setError(result.error ?? 'שגיאה בהרשמה');
       }

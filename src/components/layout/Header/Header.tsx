@@ -3,7 +3,6 @@ import { useUser } from '../../../context/UserContext';
 import styles from './Header.module.css';
 
 const navItems = [
-  { path: '/', label: 'בית' },
   { path: '/learn', label: 'למידה' },
   { path: '/community', label: 'קהילה' },
   { path: '/profile', label: 'פרופיל' },
@@ -21,36 +20,37 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.container}>
-        <Link to="/" className={styles.logo}>
+      <div className={user ? styles.containerFull : styles.containerSimple}>
+        <Link to={user ? '/community' : '/'} className={styles.logo}>
           <span className={styles.logoIcon}>📈</span>
           <span className={styles.logoText}>InvestWise</span>
         </Link>
-        <nav className={styles.nav}>
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`${styles.navLink} ${location.pathname === item.path ? styles.active : ''}`}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <div className={styles.authSection}>
-            {user ? (
-              <>
-                <span className={styles.userName}>{user.name}</span>
-                <button className={styles.authButton} onClick={logoutUser}>
-                  התנתק
-                </button>
-              </>
-            ) : (
-              <Link to="/auth" className={styles.authButton}>
-                התחברות
-              </Link>
-            )}
-          </div>
-        </nav>
+
+        {user ? (
+          <>
+            <nav className={styles.nav}>
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`${styles.navLink} ${location.pathname === item.path ? styles.active : ''}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <div className={styles.authSection}>
+              <span className={styles.userName}>{user.name}</span>
+              <button className={styles.authButton} onClick={logoutUser}>
+                התנתק
+              </button>
+            </div>
+          </>
+        ) : (
+          <Link to="/auth" className={styles.authButton}>
+            התחברות
+          </Link>
+        )}
       </div>
     </header>
   );

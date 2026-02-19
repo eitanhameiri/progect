@@ -2,14 +2,26 @@ import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useUser } from '../../context/UserContext';
 import { profileDefinitions } from '../../config/profiles';
-import { questions } from '../../config/questionnaire';
 import { getArticles } from '../../services/articlesService';
 import Button from '../../components/ui/Button/Button';
 import Card from '../../components/ui/Card/Card';
 import ProgressBar from '../../components/ui/ProgressBar/ProgressBar';
 import PageLayout from '../../components/layout/PageLayout/PageLayout';
-import ScoreChart from '../ProfileResults/ScoreChart';
 import styles from './Profile.module.css';
+
+interface InvestmentHolding {
+  platform: string;
+  amount: number;
+  assetType: string;
+}
+
+// Mock data - will be replaced with API data later
+const mockHoldings: InvestmentHolding[] = [
+  { platform: 'IBI', amount: 25000, assetType: 'קרן נאמנות' },
+  { platform: 'מיטב', amount: 15000, assetType: 'תעודת סל' },
+  { platform: 'בנק הפועלים', amount: 50000, assetType: 'פיקדון' },
+  { platform: 'פסגות', amount: 10000, assetType: 'קופת גמל' },
+];
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -31,35 +43,12 @@ export default function Profile() {
 
   const definition = profileDefinitions[profile.profileType];
 
-  // Get key answers to display
-  const keyAnswers = Object.entries(profile.answers)
-    .filter(([, answer]) => answer.selectedOptions?.length || answer.openText)
-    .slice(0, 5)
-    .map(([questionId, answer]) => {
-      const question = questions.find((q) => q.id === questionId);
-      if (!question) return null;
-
-      let displayAnswer = '';
-      if (answer.selectedOptions?.length) {
-        displayAnswer = answer.selectedOptions
-          .map((optId) => question.options?.find((o) => o.id === optId)?.text)
-          .filter(Boolean)
-          .join(', ');
-      } else if (answer.openText) {
-        displayAnswer = answer.openText;
-      }
-
-      return {
-        question: question.text,
-        answer: displayAnswer,
-      };
-    })
-    .filter(Boolean);
-
   const handleReset = () => {
     resetProfile();
     navigate('/onboarding');
   };
+
+  const totalInvestments = mockHoldings.reduce((sum, h) => sum + h.amount, 0);
 
   return (
     <PageLayout narrow>
@@ -76,23 +65,27 @@ export default function Profile() {
         </div>
 
         <Card>
-          <h3 className={styles.sectionTitle}>ניקוד</h3>
-          <ScoreChart scores={profile.scores} />
-        </Card>
-
-        {keyAnswers.length > 0 && (
-          <Card>
-            <h3 className={styles.sectionTitle}>תשובות מרכזיות</h3>
-            <div className={styles.answers}>
-              {keyAnswers.map((item, i) => (
-                <div key={i} className={styles.answerItem}>
-                  <span className={styles.answerQuestion}>{item!.question}</span>
-                  <span className={styles.answerValue}>{item!.answer}</span>
+          <h3 className={styles.sectionTitle}>תיק השקעות</h3>
+          <div className={styles.holdings}>
+            {mockHoldings.map((holding, i) => (
+              <div key={i} className={styles.holdingItem}>
+                <div className={styles.holdingPlatform}>{holding.platform}</div>
+                <div className={styles.holdingDetails}>
+                  <span className={styles.holdingType}>{holding.assetType}</span>
+                  <span className={styles.holdingAmount}>
+                    {holding.amount.toLocaleString('he-IL')} ₪
+                  </span>
                 </div>
-              ))}
+              </div>
+            ))}
+            <div className={styles.holdingTotal}>
+              <span>סה״כ</span>
+              <span className={styles.holdingAmount}>
+                {totalInvestments.toLocaleString('he-IL')} ₪
+              </span>
             </div>
-          </Card>
-        )}
+          </div>
+        </Card>
 
         {allArticles.length > 0 && (
           <Card>

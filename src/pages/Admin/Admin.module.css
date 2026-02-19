@@ -15,33 +15,103 @@
   background-clip: text;
 }
 
-.tabs {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-xl);
-  border-bottom: 2px solid var(--gray-200);
+.adminLayout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: var(--space-lg);
+  min-height: 500px;
 }
 
-.tab {
-  padding: var(--space-sm) var(--space-lg);
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  border-left: 2px solid var(--gray-200);
+  padding-left: var(--space-lg);
+}
+
+.sideSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.sideTab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   border: none;
   background: none;
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  text-align: right;
+  width: 100%;
+}
+
+.sideTab:hover {
+  color: var(--text-primary);
+  background: var(--gray-100);
+}
+
+.sideTabActive {
+  color: var(--primary-blue);
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.sideTabIcon {
+  font-size: 1.25rem;
+}
+
+.subTabs {
+  display: flex;
+  flex-direction: column;
+  padding-right: var(--space-xl);
+  gap: 2px;
+}
+
+.subTab {
+  padding: var(--space-xs) var(--space-md);
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  text-align: right;
   transition: all var(--transition-fast);
 }
 
-.tab:hover {
+.subTab:hover {
   color: var(--text-primary);
 }
 
-.tabActive {
+.subTabActive {
   color: var(--primary-blue);
-  border-bottom-color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.placeholder {
+  text-align: center;
+  padding: var(--space-3xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--text-secondary);
+}
+
+.placeholderIcon {
+  font-size: 3rem;
 }
 
 .section {
@@ -215,6 +285,23 @@
 }
 
 @media (max-width: 768px) {
+  .adminLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    border-left: none;
+    border-bottom: 2px solid var(--gray-200);
+    padding-left: 0;
+    padding-bottom: var(--space-md);
+  }
+
+  .subTabs {
+    display: none;
+  }
+
   .editorGrid {
     grid-template-columns: 1fr;
   }
